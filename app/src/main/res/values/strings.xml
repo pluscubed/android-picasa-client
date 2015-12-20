@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">PicasaClient Sample</string>
+    <string name="google_photos">Google Photos</string>
+    <string name="google_plus">Google+</string>
+</resources>
