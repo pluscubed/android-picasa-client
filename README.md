@@ -11,7 +11,7 @@ Add this in your root `build.gradle` file (**not** your module `build.gradle` fi
 
 ```gradle
 allprojects {
-  repositories {
+	repositories {
 		...
 		maven { url "https://jitpack.io" }
 	}
@@ -22,8 +22,8 @@ Add this to your module's `build.gradle` file:
 
 ```Gradle
 dependencies {
-  ...
-  compile 'com.pluscubed:android-picasa-client:{latest-version}'
+	...
+	compile 'com.pluscubed:android-picasa-client:{latest-version}'
 }
 ```
 
