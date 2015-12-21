@@ -280,8 +280,8 @@ public class MainActivity extends AppCompatActivity {
                                         .content("Time: " + dateTime
                                                 + "\n" + "Camera: " + camera
                                                 + "\n" + "ISO: " + exifTags.getExifIso()
-                                                + "\n" + "F-Stop: " + (int) (1 / exifTags.getExifFstop())
-                                                + "\n" + "Exposure: " + exifTags.getExifExposure() + "s"
+                                                + "\n" + "F-Stop: " + exifTags.getExifFstop()
+                                                + "\n" + "Exposure: 1/" + (int) (1 / exifTags.getExifExposure() + 0.5) + "s"
                                                 + "\n" + "Focal Length: " + exifTags.getExifFocalLength() + "mm"
                                                 + "\n" + "Distance: " + exifTags.getExifDistance())
                                         .positiveText(android.R.string.ok)

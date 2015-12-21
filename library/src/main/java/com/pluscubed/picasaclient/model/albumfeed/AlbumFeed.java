@@ -81,9 +81,6 @@ public class AlbumFeed {
     @SerializedName("gd$etag")
     @Expose
     private String gd$etag;
-    @SerializedName("gphoto$timestamp")
-    @Expose
-    private Gphoto$timestamp gphoto$timestamp;
     @SerializedName("updated")
     @Expose
     private Updated updated;
@@ -143,6 +140,9 @@ public class AlbumFeed {
     @SerializedName("gphoto$albumType")
     @Expose
     private SingleBodyElement gphotoAlbumType;
+    @SerializedName("gphoto$timestamp")
+    @Expose
+    private SingleBodyElement gphotoTimestamp;
 
     /**
      * @return title
@@ -175,6 +175,17 @@ public class AlbumFeed {
 
     public void setGphotoAlbumType(SingleBodyElement gphotoAlbumType) {
         this.gphotoAlbumType = gphotoAlbumType;
+    }
+
+    /**
+     * @return Gphoto timestamp
+     */
+    public long getGphotoTimestamp() {
+        return Long.parseLong(gphotoTimestamp.getBody());
+    }
+
+    public void setGphotoTimestamp(long gphotoTimestamp) {
+        this.gphotoTimestamp.setBody(String.valueOf(gphotoTimestamp));
     }
 
     public long getGphotoId() {
@@ -319,14 +330,6 @@ public class AlbumFeed {
 
     public void setGd$etag(String gd$etag) {
         this.gd$etag = gd$etag;
-    }
-
-    public Gphoto$timestamp getGphoto$timestamp() {
-        return gphoto$timestamp;
-    }
-
-    public void setGphoto$timestamp(Gphoto$timestamp gphoto$timestamp) {
-        this.gphoto$timestamp = gphoto$timestamp;
     }
 
     public Updated getUpdated() {
