@@ -3,22 +3,34 @@
 Not ready for use yet. Watch the repo for updates.
 
 ### Dependency
-[![Release](https://img.shields.io/github/release/plusCubed/android-picasa-client.svg?label=JitPack)](https://jitpack.io/#com.pluscubed/android-picasa-client)  
-Add the jitpack.io repo and this library to `build.gradle`:
-```Gradle
-repositories {
-  // ...
-  maven { url "https://jitpack.io" }
-}
 
+[![Release](https://img.shields.io/github/release/plusCubed/android-picasa-client.svg?label=JitPack)](https://jitpack.io/#com.pluscubed/android-picasa-client) [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0.html)
+
+
+Add this in your root `build.gradle` file (**not** your module `build.gradle` file):
+
+```gradle
+allprojects {
+  repositories {
+		...
+		maven { url "https://jitpack.io" }
+	}
+}
+```
+
+Add this to your module's `build.gradle` file:
+
+```Gradle
 dependencies {
-  // ...
+  ...
   compile 'com.pluscubed:android-picasa-client:{latest-version}'
 }
 ```
+
 The library is versioned according to [Semantic Versioning](http://semver.org/).
 
 ### License
+
 ```
 Copyright 2015 Daniel Ciao
 
