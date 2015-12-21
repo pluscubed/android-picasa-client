@@ -15,8 +15,10 @@ import com.google.android.gms.auth.GooglePlayServicesAvailabilityException;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.android.gms.common.AccountPicker;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.pluscubed.picasaclient.model.FeedResponse;
-import com.pluscubed.picasaclient.model.UserFeed;
+import com.pluscubed.picasaclient.model.albumfeed.AlbumFeed;
+import com.pluscubed.picasaclient.model.albumfeed.AlbumFeedResponse;
+import com.pluscubed.picasaclient.model.userfeed.UserFeed;
+import com.pluscubed.picasaclient.model.userfeed.UserFeedResponse;
 import com.squareup.okhttp.HttpUrl;
 import com.squareup.okhttp.Interceptor;
 import com.squareup.okhttp.OkHttpClient;
@@ -195,15 +197,28 @@ public class PicasaClient {
         return mPicasaService;
     }
 
-    public Single<UserFeed> getFeed() {
-        return mPicasaService.getFeedResponse()
-                .map(new Func1<FeedResponse, UserFeed>() {
+    public Single<UserFeed> getUserFeed() {
+        return mPicasaService.getUserFeedResponse()
+                .map(new Func1<UserFeedResponse, UserFeed>() {
                     @Override
-                    public UserFeed call(FeedResponse response) {
+                    public UserFeed call(UserFeedResponse response) {
                         return response.getFeed();
                     }
                 })
                 .subscribeOn(Schedulers.io())
                 .toSingle();
     }
+
+    public Single<AlbumFeed> getAlbumFeed(long albumId) {
+        return mPicasaService.getAlbumFeedResponse(albumId)
+                .map(new Func1<AlbumFeedResponse, AlbumFeed>() {
+                    @Override
+                    public AlbumFeed call(AlbumFeedResponse response) {
+                        return response.getFeed();
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .toSingle();
+    }
+
 }

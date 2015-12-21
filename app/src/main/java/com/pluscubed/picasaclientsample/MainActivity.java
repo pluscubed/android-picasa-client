@@ -17,8 +17,9 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.pluscubed.picasaclient.PicasaClient;
-import com.pluscubed.picasaclient.model.AlbumEntry;
-import com.pluscubed.picasaclient.model.UserFeed;
+import com.pluscubed.picasaclient.model.albumfeed.PhotoEntry;
+import com.pluscubed.picasaclient.model.userfeed.AlbumEntry;
+import com.pluscubed.picasaclient.model.userfeed.UserFeed;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,9 @@ import rx.functions.Action0;
 
 public class MainActivity extends AppCompatActivity {
 
-    private List<AlbumEntry> mEntries;
+    private List<AlbumEntry> mAlbumEntries;
+    private List<PhotoEntry> mPhotoEntries;
+
     private PicasaAdapter mAdapter;
     private SwipeRefreshLayout mRefreshLayout;
 
@@ -39,7 +42,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mEntries = new ArrayList<>();
+        mAlbumEntries = new ArrayList<>();
+        mPhotoEntries = new ArrayList<>();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -65,12 +69,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void reload() {
-        PicasaClient.get().getFeed()
+        PicasaClient.get().getUserFeed()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new SingleSubscriber<UserFeed>() {
                     @Override
                     public void onSuccess(UserFeed feed) {
-                        mEntries = feed.getAlbumEntries();
+                        mAlbumEntries = feed.getAlbumEntries();
 
                         mAdapter.notifyDataSetChanged();
 
@@ -152,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            AlbumEntry albumEntry = mEntries.get(position);
+            AlbumEntry albumEntry = mAlbumEntries.get(position);
 
             Glide.with(MainActivity.this)
                     .load(albumEntry.getMediaGroup().getContents().get(0).getUrl())
@@ -176,12 +180,12 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return mEntries.size();
+            return mAlbumEntries.size();
         }
 
         @Override
         public long getItemId(int position) {
-            return mEntries.get(position).getGphotoId();
+            return mAlbumEntries.get(position).getGphotoId();
         }
     }
 }
