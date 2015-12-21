@@ -9,14 +9,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.bumptech.glide.Glide;
 import com.pluscubed.picasaclient.PicasaClient;
+import com.pluscubed.picasaclient.model.albumfeed.AlbumFeed;
+import com.pluscubed.picasaclient.model.albumfeed.ExifTags;
 import com.pluscubed.picasaclient.model.albumfeed.PhotoEntry;
 import com.pluscubed.picasaclient.model.userfeed.AlbumEntry;
 import com.pluscubed.picasaclient.model.userfeed.UserFeed;
@@ -27,12 +32,16 @@ import java.util.List;
 import rx.SingleSubscriber;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
 
 public class MainActivity extends AppCompatActivity {
 
     private List<AlbumEntry> mAlbumEntries;
     private List<PhotoEntry> mPhotoEntries;
+
+    private boolean mAlbumMode;
+    private long mAlbumId;
+
+    private boolean mReloading;
 
     private PicasaAdapter mAdapter;
     private SwipeRefreshLayout mRefreshLayout;
@@ -41,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mAlbumMode = true;
 
         mAlbumEntries = new ArrayList<>();
         mPhotoEntries = new ArrayList<>();
@@ -69,23 +80,66 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void reload() {
-        PicasaClient.get().getUserFeed()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new SingleSubscriber<UserFeed>() {
-                    @Override
-                    public void onSuccess(UserFeed feed) {
-                        mAlbumEntries = feed.getAlbumEntries();
+        mReloading = true;
+        mAdapter.notifyDataSetChanged();
 
-                        mAdapter.notifyDataSetChanged();
+        mRefreshLayout.setRefreshing(true);
+        if (mAlbumMode) {
+            if (mAlbumEntries.isEmpty()) {
+                PicasaClient.get().getUserFeed()
+                        .toObservable()
+                        .retry(5)
+                        .toSingle()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new SingleSubscriber<UserFeed>() {
+                            @Override
+                            public void onSuccess(UserFeed feed) {
+                                mAlbumEntries = feed.getAlbumEntries();
 
-                        mRefreshLayout.setRefreshing(false);
-                    }
+                                onReloadFinished();
+                            }
 
-                    @Override
-                    public void onError(Throwable error) {
-                        error.printStackTrace();
-                    }
-                });
+                            @Override
+                            public void onError(Throwable error) {
+                                MainActivity.this.onError(error);
+                            }
+                        });
+            } else {
+                onReloadFinished();
+            }
+        } else {
+            PicasaClient.get().getAlbumFeed(mAlbumId)
+                    .toObservable()
+                    .retry(5)
+                    .toSingle()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new SingleSubscriber<AlbumFeed>() {
+                        @Override
+                        public void onSuccess(AlbumFeed albumFeed) {
+                            mPhotoEntries = albumFeed.getPhotoEntries();
+
+                            onReloadFinished();
+                        }
+
+                        @Override
+                        public void onError(Throwable error) {
+                            MainActivity.this.onError(error);
+                        }
+                    });
+        }
+    }
+
+    private void onReloadFinished() {
+        mReloading = false;
+        mAdapter.notifyDataSetChanged();
+        mRefreshLayout.setRefreshing(false);
+    }
+
+    private void onError(Throwable error) {
+        mReloading = false;
+        error.printStackTrace();
+        mRefreshLayout.setRefreshing(false);
+        Toast.makeText(MainActivity.this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -94,16 +148,10 @@ public class MainActivity extends AppCompatActivity {
 
         PicasaClient.get().onActivityResult(requestCode, resultCode, data)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe(new Action0() {
-                    @Override
-                    public void call() {
-                        mRefreshLayout.setRefreshing(true);
-                    }
-                })
                 .subscribe(new Subscriber<Object>() {
                     @Override
                     public void onCompleted() {
-                        reload();
+
                     }
 
                     @Override
@@ -113,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext(Object o) {
-
+                        reload();
                     }
                 });
     }
@@ -125,21 +173,17 @@ public class MainActivity extends AppCompatActivity {
         PicasaClient.get().detachActivity();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView image;
-        TextView title;
-        TextView subtitle;
-
-        public ViewHolder(View itemView) {
-            super(itemView);
-
-            image = (ImageView) itemView.findViewById(R.id.image);
-            title = (TextView) itemView.findViewById(R.id.title);
-            subtitle = (TextView) itemView.findViewById(R.id.subtitle);
+    @Override
+    public void onBackPressed() {
+        if (!mAlbumMode) {
+            mAlbumMode = true;
+            reload();
+        } else {
+            super.onBackPressed();
         }
     }
 
-    private class PicasaAdapter extends RecyclerView.Adapter<ViewHolder> {
+    private class PicasaAdapter extends RecyclerView.Adapter<PicasaAdapter.ViewHolder> {
 
         public PicasaAdapter() {
             super();
@@ -156,36 +200,97 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            AlbumEntry albumEntry = mAlbumEntries.get(position);
+            if (mAlbumMode) {
 
-            Glide.with(MainActivity.this)
-                    .load(albumEntry.getMediaGroup().getContents().get(0).getUrl())
-                    .into(holder.image);
+                AlbumEntry albumEntry = mAlbumEntries.get(position);
 
-            holder.title.setText(albumEntry.getTitle());
+                Glide.with(MainActivity.this)
+                        .load(albumEntry.getMediaGroup().getContents().get(0).getUrl())
+                        .into(holder.image);
 
-            String gphotoAlbumType = albumEntry.getGphotoAlbumType();
-            if (gphotoAlbumType != null) {
-                switch (gphotoAlbumType) {
-                    case AlbumEntry.TYPE_GOOGLE_PHOTOS:
-                        gphotoAlbumType = getString(R.string.google_photos);
-                        break;
-                    case AlbumEntry.TYPE_GOOGLE_PLUS:
-                        gphotoAlbumType = getString(R.string.google_plus);
-                        break;
+                holder.title.setText(albumEntry.getTitle());
+
+                String gphotoAlbumType = albumEntry.getGphotoAlbumType();
+                if (gphotoAlbumType != null) {
+                    switch (gphotoAlbumType) {
+                        case AlbumEntry.TYPE_GOOGLE_PHOTOS:
+                            gphotoAlbumType = getString(R.string.google_photos);
+                            break;
+                        case AlbumEntry.TYPE_GOOGLE_PLUS:
+                            gphotoAlbumType = getString(R.string.google_plus);
+                            break;
+                    }
                 }
+                holder.subtitle.setText(gphotoAlbumType);
+            } else {
+                PhotoEntry photoEntry = mPhotoEntries.get(position);
+
+                Glide.with(MainActivity.this)
+                        .load(photoEntry.getMediaGroup().getContents().get(0).getUrl())
+                        .into(holder.image);
+
+                holder.title.setText(photoEntry.getTitle());
+                String text = photoEntry.getGphotoWidth() + "x" + photoEntry.getGphotoHeight();
+                holder.subtitle.setText(text);
             }
-            holder.subtitle.setText(gphotoAlbumType);
         }
 
         @Override
         public int getItemCount() {
-            return mAlbumEntries.size();
+            if (mReloading) return 0;
+            else return mAlbumMode ? mAlbumEntries.size() : mPhotoEntries.size();
         }
 
         @Override
         public long getItemId(int position) {
-            return mAlbumEntries.get(position).getGphotoId();
+            return mAlbumMode ? mAlbumEntries.get(position).getGphotoId() : mPhotoEntries.get(position).getGphotoId();
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+            ImageView image;
+            TextView title;
+            TextView subtitle;
+
+            public ViewHolder(View itemView) {
+                super(itemView);
+
+                image = (ImageView) itemView.findViewById(R.id.image);
+                title = (TextView) itemView.findViewById(R.id.title);
+                subtitle = (TextView) itemView.findViewById(R.id.subtitle);
+
+                itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (getAdapterPosition() != RecyclerView.NO_POSITION) {
+                            if (mAlbumMode) {
+                                mAlbumMode = false;
+                                mAlbumId = mAlbumEntries.get(getAdapterPosition()).getGphotoId();
+                                reload();
+                            } else {
+                                PhotoEntry entry = mPhotoEntries.get(getAdapterPosition());
+
+                                ExifTags exifTags = entry.getExifTags();
+
+                                String dateTime = DateUtils.formatDateTime(MainActivity.this, entry.getGphotoTimestamp(),
+                                        DateUtils.FORMAT_SHOW_YEAR | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_TIME);
+                                String camera = exifTags.getExifMake() + " " + exifTags.getExifModel();
+
+
+                                new MaterialDialog.Builder(MainActivity.this)
+                                        .content("Time: " + dateTime
+                                                + "\n" + "Camera: " + camera
+                                                + "\n" + "ISO: " + exifTags.getExifIso()
+                                                + "\n" + "F-Stop: " + (int) (1 / exifTags.getExifFstop())
+                                                + "\n" + "Exposure: " + exifTags.getExifExposure() + "s"
+                                                + "\n" + "Focal Length: " + exifTags.getExifFocalLength() + "mm"
+                                                + "\n" + "Distance: " + exifTags.getExifDistance())
+                                        .positiveText(android.R.string.ok)
+                                        .show();
+                            }
+                        }
+                    }
+                });
+            }
         }
     }
 }

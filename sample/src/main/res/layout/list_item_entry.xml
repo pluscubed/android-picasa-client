@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:foreground="?selectableItemBackground"
+    android:theme="@style/Theme.AppCompat"
     tools:ignore="RtlSymmetry">
 
     <ImageView
@@ -36,7 +37,7 @@
             android:layout_toLeftOf="@+id/subtitle"
             android:layout_toStartOf="@+id/subtitle"
             android:singleLine="true"
-            android:textColor="?android:textColorPrimaryInverse"
+            android:textColor="?android:textColorPrimary"
             android:textSize="14sp"
             tools:text="Content" />
 
@@ -48,7 +49,7 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:textColor="?android:textColorSecondaryInverse"
+            android:textColor="?android:textColorSecondary"
             android:textSize="14sp"
             tools:text="Sub-content" />
 

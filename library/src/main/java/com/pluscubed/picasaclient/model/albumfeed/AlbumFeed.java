@@ -12,7 +12,6 @@ import com.pluscubed.picasaclient.model.userfeed.Gphoto$name;
 import com.pluscubed.picasaclient.model.userfeed.Gphoto$nickname;
 import com.pluscubed.picasaclient.model.userfeed.Gphoto$numphotos;
 import com.pluscubed.picasaclient.model.userfeed.Gphoto$numphotosremaining;
-import com.pluscubed.picasaclient.model.userfeed.Gphoto$timestamp;
 import com.pluscubed.picasaclient.model.userfeed.Gphoto$user;
 import com.pluscubed.picasaclient.model.userfeed.Icon;
 import com.pluscubed.picasaclient.model.userfeed.Id;
@@ -82,9 +81,6 @@ public class AlbumFeed {
     @SerializedName("gd$etag")
     @Expose
     private String gd$etag;
-    @SerializedName("gphoto$albumType")
-    @Expose
-    private Gphoto$albumType gphoto$albumType;
     @SerializedName("gphoto$timestamp")
     @Expose
     private Gphoto$timestamp gphoto$timestamp;
@@ -144,6 +140,9 @@ public class AlbumFeed {
     @SerializedName("gphoto$id")
     @Expose
     private SingleBodyElement gphotoId;
+    @SerializedName("gphoto$albumType")
+    @Expose
+    private SingleBodyElement gphotoAlbumType;
 
     /**
      * @return title
@@ -165,6 +164,17 @@ public class AlbumFeed {
 
     public void setPhotoEntries(List<PhotoEntry> photoEntries) {
         this.photoEntries = photoEntries;
+    }
+
+    /**
+     * @return Gphoto album type
+     */
+    public String getGphotoAlbumType() {
+        return gphotoAlbumType.getBody();
+    }
+
+    public void setGphotoAlbumType(SingleBodyElement gphotoAlbumType) {
+        this.gphotoAlbumType = gphotoAlbumType;
     }
 
     public long getGphotoId() {
@@ -309,14 +319,6 @@ public class AlbumFeed {
 
     public void setGd$etag(String gd$etag) {
         this.gd$etag = gd$etag;
-    }
-
-    public Gphoto$albumType getGphoto$albumType() {
-        return gphoto$albumType;
-    }
-
-    public void setGphoto$albumType(Gphoto$albumType gphoto$albumType) {
-        this.gphoto$albumType = gphoto$albumType;
     }
 
     public Gphoto$timestamp getGphoto$timestamp() {

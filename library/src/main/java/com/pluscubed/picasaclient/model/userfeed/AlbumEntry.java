@@ -49,9 +49,6 @@ public class AlbumEntry {
     @SerializedName("gphoto$nickname")
     @Expose
     private Gphoto$nickname_ gphoto$nickname;
-    @SerializedName("gphoto$timestamp")
-    @Expose
-    private Gphoto$timestamp gphoto$timestamp;
     @SerializedName("link")
     @Expose
     private List<Link_> link = new ArrayList<Link_>();
@@ -88,6 +85,9 @@ public class AlbumEntry {
     @Expose
     @Nullable
     private SingleBodyElement gphotoAlbumType;
+    @SerializedName("gphoto$timestamp")
+    @Expose
+    private SingleBodyElement gphotoTimestamp;
 
     /**
      * @return media group
@@ -132,6 +132,17 @@ public class AlbumEntry {
 
     public void setGphotoAlbumType(SingleBodyElement gphotoAlbumType) {
         this.gphotoAlbumType = gphotoAlbumType;
+    }
+
+    /**
+     * @return Gphoto timestamp
+     */
+    public long getGphotoTimestamp() {
+        return Long.parseLong(gphotoTimestamp.getBody());
+    }
+
+    public void setGphotoTimestamp(long gphotoTimestamp) {
+        this.gphotoTimestamp.setBody(String.valueOf(gphotoTimestamp));
     }
 
     public List<Category_> getCategory() {
@@ -220,14 +231,6 @@ public class AlbumEntry {
 
     public void setGphoto$nickname(Gphoto$nickname_ gphoto$nickname) {
         this.gphoto$nickname = gphoto$nickname;
-    }
-
-    public Gphoto$timestamp getGphoto$timestamp() {
-        return gphoto$timestamp;
-    }
-
-    public void setGphoto$timestamp(Gphoto$timestamp gphoto$timestamp) {
-        this.gphoto$timestamp = gphoto$timestamp;
     }
 
     public List<Link_> getLink() {

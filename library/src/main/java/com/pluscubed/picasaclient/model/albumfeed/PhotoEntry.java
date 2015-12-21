@@ -20,10 +20,10 @@ public class PhotoEntry {
 
     @SerializedName("gphoto$width")
     @Expose
-    private Gphoto$width gphoto$width;
+    private SingleBodyElement gphotoWidth;
     @SerializedName("gphoto$height")
     @Expose
-    private Gphoto$height gphoto$height;
+    private SingleBodyElement gphotoHeight;
     @SerializedName("id")
     @Expose
     private Id_ id;
@@ -45,15 +45,9 @@ public class PhotoEntry {
     @SerializedName("gd$etag")
     @Expose
     private String gd$etag;
-    @SerializedName("exif$tags")
-    @Expose
-    private Exif$tags exif$tags;
     @SerializedName("gphoto$streamId")
     @Expose
     private List<Gphoto$streamId> gphoto$streamId = new ArrayList<>();
-    @SerializedName("gphoto$timestamp")
-    @Expose
-    private Gphoto$timestamp_ gphoto$timestamp;
     @SerializedName("updated")
     @Expose
     private Updated_ updated;
@@ -75,9 +69,6 @@ public class PhotoEntry {
     @SerializedName("gphoto$commentingEnabled")
     @Expose
     private Gphoto$commentingEnabled gphoto$commentingEnabled;
-    @SerializedName("gphoto$albumid")
-    @Expose
-    private Gphoto$albumid gphoto$albumid;
     @SerializedName("summary")
     @Expose
     private Summary summary;
@@ -100,6 +91,15 @@ public class PhotoEntry {
     @SerializedName("media$group")
     @Expose
     private MediaGroup mediaGroup;
+    @SerializedName("gphoto$albumid")
+    @Expose
+    private SingleBodyElement gphotoAlbumId;
+    @SerializedName("exif$tags")
+    @Expose
+    private ExifTags exifTags;
+    @SerializedName("gphoto$timestamp")
+    @Expose
+    private SingleBodyElement gphotoTimestamp;
 
 
     /**
@@ -113,6 +113,20 @@ public class PhotoEntry {
         this.mediaGroup = mediaGroup;
     }
 
+    /**
+     * @return Gphoto album ID
+     */
+    public long getGphotoAlbumId() {
+        return Long.parseLong(gphotoAlbumId.getBody());
+    }
+
+    public void setGphotoAlbumId(SingleBodyElement gphotoAlbumId) {
+        this.gphotoAlbumId = gphotoAlbumId;
+    }
+
+    /**
+     * @return Gphoto ID
+     */
     public long getGphotoId() {
         return Long.parseLong(gphotoId.getBody());
     }
@@ -121,20 +135,48 @@ public class PhotoEntry {
         this.gphotoId = gphotoId;
     }
 
-    public Gphoto$width getGphoto$width() {
-        return gphoto$width;
+    /**
+     * @return Gphoto width
+     */
+    public int getGphotoWidth() {
+        return Integer.parseInt(gphotoWidth.getBody());
     }
 
-    public void setGphoto$width(Gphoto$width gphoto$width) {
-        this.gphoto$width = gphoto$width;
+    public void setGphotoWidth(SingleBodyElement gphotoWidth) {
+        this.gphotoWidth = gphotoWidth;
     }
 
-    public Gphoto$height getGphoto$height() {
-        return gphoto$height;
+    /**
+     * @return Gphoto height
+     */
+    public int getGphotoHeight() {
+        return Integer.parseInt(gphotoHeight.getBody());
     }
 
-    public void setGphoto$height(Gphoto$height gphoto$height) {
-        this.gphoto$height = gphoto$height;
+    public void setGphotoHeight(SingleBodyElement gphotoHeight) {
+        this.gphotoHeight = gphotoHeight;
+    }
+
+    /**
+     * @return EXIF tags
+     */
+    public ExifTags getExifTags() {
+        return exifTags;
+    }
+
+    public void setExifTags(ExifTags exifTags) {
+        this.exifTags = exifTags;
+    }
+
+    /**
+     * @return Gphoto timestamp
+     */
+    public long getGphotoTimestamp() {
+        return Long.parseLong(gphotoTimestamp.getBody());
+    }
+
+    public void setGphotoTimestamp(SingleBodyElement gphotoTimestamp) {
+        this.gphotoTimestamp = gphotoTimestamp;
     }
 
     public Id_ getId() {
@@ -193,28 +235,12 @@ public class PhotoEntry {
         this.gd$etag = gd$etag;
     }
 
-    public Exif$tags getExif$tags() {
-        return exif$tags;
-    }
-
-    public void setExif$tags(Exif$tags exif$tags) {
-        this.exif$tags = exif$tags;
-    }
-
     public List<Gphoto$streamId> getGphoto$streamId() {
         return gphoto$streamId;
     }
 
     public void setGphoto$streamId(List<Gphoto$streamId> gphoto$streamId) {
         this.gphoto$streamId = gphoto$streamId;
-    }
-
-    public Gphoto$timestamp_ getGphoto$timestamp() {
-        return gphoto$timestamp;
-    }
-
-    public void setGphoto$timestamp(Gphoto$timestamp_ gphoto$timestamp) {
-        this.gphoto$timestamp = gphoto$timestamp;
     }
 
     public Updated_ getUpdated() {
@@ -237,61 +263,41 @@ public class PhotoEntry {
         return gphoto$size;
     }
 
-
     public void setGphoto$size(Gphoto$size gphoto$size) {
         this.gphoto$size = gphoto$size;
     }
-
 
     public List<Link_> getLink() {
         return link;
     }
 
-
     public void setLink(List<Link_> link) {
         this.link = link;
     }
-
 
     public App$edited getApp$edited() {
         return app$edited;
     }
 
-
     public void setApp$edited(App$edited app$edited) {
         this.app$edited = app$edited;
     }
-
 
     public Gphoto$commentCount getGphoto$commentCount() {
         return gphoto$commentCount;
     }
 
-
     public void setGphoto$commentCount(Gphoto$commentCount gphoto$commentCount) {
         this.gphoto$commentCount = gphoto$commentCount;
     }
-
 
     public Gphoto$commentingEnabled getGphoto$commentingEnabled() {
         return gphoto$commentingEnabled;
     }
 
-
     public void setGphoto$commentingEnabled(Gphoto$commentingEnabled gphoto$commentingEnabled) {
         this.gphoto$commentingEnabled = gphoto$commentingEnabled;
     }
-
-
-    public Gphoto$albumid getGphoto$albumid() {
-        return gphoto$albumid;
-    }
-
-
-    public void setGphoto$albumid(Gphoto$albumid gphoto$albumid) {
-        this.gphoto$albumid = gphoto$albumid;
-    }
-
 
     public Summary getSummary() {
         return summary;

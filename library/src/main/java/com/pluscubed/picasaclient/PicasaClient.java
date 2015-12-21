@@ -40,12 +40,15 @@ import rx.schedulers.Schedulers;
 
 public class PicasaClient {
 
-    public static final String SCOPE_PICASA = "https://picasaweb.google.com/data/";
-    public static final String BASE_API_URL = "https://picasaweb.google.com/data/feed/api/user/";
+    private static final String SCOPE_PICASA = "https://picasaweb.google.com/data/";
+    private static final String BASE_API_URL = "https://picasaweb.google.com/data/feed/api/user/";
 
-    public static final int REQUEST_ACCOUNT_PICKER = 1000;
-    public static final String ACCOUNT_TYPE_GOOGLE = "com.google";
+    private static final int REQUEST_ACCOUNT_PICKER = 1000;
     private static final int REQUEST_RECOVER_PLAY_SERVICES_ERROR = 1024;
+
+    private static final String ACCOUNT_TYPE_GOOGLE = "com.google";
+
+
     private static PicasaClient picasaClient;
     private Activity mActivity;
     private Account mAccount;
@@ -121,6 +124,10 @@ public class PicasaClient {
     }
 
     //TODO: Use Completable once public API is released
+
+    /**
+     * Processes account picker or error result. Observable emits an item when the Picasa service is initialized.
+     */
     public Observable<?> onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_ACCOUNT_PICKER) {
             if (resultCode == Activity.RESULT_OK) {
@@ -137,7 +144,7 @@ public class PicasaClient {
             return retrieveTokenInitService();
         }
 
-        return Observable.error(new Exception("Unknown error"));
+        return Observable.empty();
     }
 
     private boolean isDeviceOnline() {
