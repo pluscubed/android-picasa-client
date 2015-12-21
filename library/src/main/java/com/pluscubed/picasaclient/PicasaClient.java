@@ -15,10 +15,10 @@ import com.google.android.gms.auth.GooglePlayServicesAvailabilityException;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.android.gms.common.AccountPicker;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.pluscubed.picasaclient.model.albumfeed.AlbumFeed;
-import com.pluscubed.picasaclient.model.albumfeed.AlbumFeedResponse;
-import com.pluscubed.picasaclient.model.userfeed.UserFeed;
-import com.pluscubed.picasaclient.model.userfeed.UserFeedResponse;
+import com.pluscubed.picasaclient.model.AlbumFeed;
+import com.pluscubed.picasaclient.model.AlbumFeedResponse;
+import com.pluscubed.picasaclient.model.UserFeed;
+import com.pluscubed.picasaclient.model.UserFeedResponse;
 import com.squareup.okhttp.HttpUrl;
 import com.squareup.okhttp.Interceptor;
 import com.squareup.okhttp.OkHttpClient;
@@ -48,7 +48,6 @@ public class PicasaClient {
 
     private static final String ACCOUNT_TYPE_GOOGLE = "com.google";
 
-
     private static PicasaClient picasaClient;
     private Activity mActivity;
     private Account mAccount;
@@ -56,34 +55,6 @@ public class PicasaClient {
     private PicasaService mPicasaService;
 
     private PicasaClient() {
-    }
-
-    public static PicasaClient get() {
-        if (picasaClient == null) {
-            picasaClient = new PicasaClient();
-        }
-        return picasaClient;
-    }
-
-    public void attachActivity(Activity activity) {
-        mActivity = activity;
-    }
-
-    public void detachActivity() {
-        mActivity = null;
-    }
-
-    public void setAccount(Account account) {
-        if (account.type.equals(ACCOUNT_TYPE_GOOGLE)) {
-            mAccount = account;
-
-            retrieveTokenInitService();
-        } else {
-            throw new RuntimeException("You may only set a Google account");
-        }
-    }
-
-    private void initService() {
         OkHttpClient client = new OkHttpClient();
         client.interceptors().add(new Interceptor() {
             @Override
@@ -116,6 +87,34 @@ public class PicasaClient {
         mPicasaService = retrofit.create(PicasaService.class);
     }
 
+    public static PicasaClient get() {
+        if (picasaClient == null) {
+            picasaClient = new PicasaClient();
+        }
+        return picasaClient;
+    }
+
+    public void attachActivity(Activity activity) {
+        mActivity = activity;
+    }
+
+    public void detachActivity() {
+        mActivity = null;
+    }
+
+    /**
+     * Observable emits an item when the Picasa service is initialized, empty otherwise.
+     */
+    public Observable<?> setAccount(Account account) {
+        if (account.type.equals(ACCOUNT_TYPE_GOOGLE)) {
+            mAccount = account;
+
+            return retrieveTokenInitService();
+        } else {
+            return Observable.error(new RuntimeException("You may only set a Google account"));
+        }
+    }
+
 
     public void pickAccount() {
         String[] accountTypes = new String[]{ACCOUNT_TYPE_GOOGLE};
@@ -123,11 +122,11 @@ public class PicasaClient {
         mActivity.startActivityForResult(intent, REQUEST_ACCOUNT_PICKER);
     }
 
-    //TODO: Use Completable once public API is released
 
     /**
-     * Processes account picker or error result. Observable emits an item when the Picasa service is initialized.
+     * Processes account picker or error result. Observable emits an item when the Picasa service is initialized, empty otherwise.
      */
+    //TODO: Use Completable once public API is released
     public Observable<?> onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_ACCOUNT_PICKER) {
             if (resultCode == Activity.RESULT_OK) {
@@ -185,26 +184,27 @@ public class PicasaClient {
                         @Override
                         public void call(String s) {
                             mOAuthToken = s;
-
-                            initService();
                         }
                     })
-                    .flatMapObservable(new Func1<String, Observable<?>>() {
-                        @Override
-                        public Observable<?> call(String s) {
-                            return Observable.just(s);
-                        }
-                    });
+                    .toObservable();
         } else {
             return Observable.error(new Exception("Device not online."));
         }
     }
 
+    private void checkTokenInitialized() {
+        if (mOAuthToken == null) {
+            throw new RuntimeException("Service not initialized");
+        }
+    }
+
     public PicasaService getService() {
+        checkTokenInitialized();
         return mPicasaService;
     }
 
     public Single<UserFeed> getUserFeed() {
+        checkTokenInitialized();
         return mPicasaService.getUserFeedResponse()
                 .map(new Func1<UserFeedResponse, UserFeed>() {
                     @Override
@@ -217,6 +217,7 @@ public class PicasaClient {
     }
 
     public Single<AlbumFeed> getAlbumFeed(long albumId) {
+        checkTokenInitialized();
         return mPicasaService.getAlbumFeedResponse(albumId)
                 .map(new Func1<AlbumFeedResponse, AlbumFeed>() {
                     @Override

@@ -20,11 +20,11 @@ import android.widget.Toast;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.bumptech.glide.Glide;
 import com.pluscubed.picasaclient.PicasaClient;
-import com.pluscubed.picasaclient.model.albumfeed.AlbumFeed;
-import com.pluscubed.picasaclient.model.albumfeed.ExifTags;
-import com.pluscubed.picasaclient.model.albumfeed.PhotoEntry;
-import com.pluscubed.picasaclient.model.userfeed.AlbumEntry;
-import com.pluscubed.picasaclient.model.userfeed.UserFeed;
+import com.pluscubed.picasaclient.model.AlbumEntry;
+import com.pluscubed.picasaclient.model.AlbumFeed;
+import com.pluscubed.picasaclient.model.ExifTags;
+import com.pluscubed.picasaclient.model.PhotoEntry;
+import com.pluscubed.picasaclient.model.UserFeed;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                reload();
+                reload(true);
             }
         });
 
@@ -79,13 +79,13 @@ public class MainActivity extends AppCompatActivity {
         PicasaClient.get().pickAccount();
     }
 
-    private void reload() {
+    private void reload(boolean force) {
         mReloading = true;
         mAdapter.notifyDataSetChanged();
 
         mRefreshLayout.setRefreshing(true);
         if (mAlbumMode) {
-            if (mAlbumEntries.isEmpty()) {
+            if (force || mAlbumEntries.isEmpty()) {
                 PicasaClient.get().getUserFeed()
                         .toObservable()
                         .retry(5)
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext(Object o) {
-                        reload();
+                        reload(false);
                     }
                 });
     }
@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (!mAlbumMode) {
             mAlbumMode = true;
-            reload();
+            reload(false);
         } else {
             super.onBackPressed();
         }
@@ -265,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
                             if (mAlbumMode) {
                                 mAlbumMode = false;
                                 mAlbumId = mAlbumEntries.get(getAdapterPosition()).getGphotoId();
-                                reload();
+                                reload(false);
                             } else {
                                 PhotoEntry entry = mPhotoEntries.get(getAdapterPosition());
 

@@ -1,8 +1,8 @@
 package com.pluscubed.picasaclient;
 
-import com.pluscubed.picasaclient.model.albumfeed.AlbumFeed;
-import com.pluscubed.picasaclient.model.userfeed.AlbumEntry;
-import com.pluscubed.picasaclient.model.userfeed.UserFeed;
+import com.pluscubed.picasaclient.model.AlbumEntry;
+import com.pluscubed.picasaclient.model.AlbumFeed;
+import com.pluscubed.picasaclient.model.UserFeed;
 
 import rx.Single;
 import rx.functions.Func1;

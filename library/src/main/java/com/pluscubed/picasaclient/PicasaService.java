@@ -1,8 +1,8 @@
 package com.pluscubed.picasaclient;
 
 
-import com.pluscubed.picasaclient.model.albumfeed.AlbumFeedResponse;
-import com.pluscubed.picasaclient.model.userfeed.UserFeedResponse;
+import com.pluscubed.picasaclient.model.AlbumFeedResponse;
+import com.pluscubed.picasaclient.model.UserFeedResponse;
 
 import retrofit.http.GET;
 import retrofit.http.Path;
