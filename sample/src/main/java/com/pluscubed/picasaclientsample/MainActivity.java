@@ -1,7 +1,9 @@
 package com.pluscubed.picasaclientsample;
 
+import android.accounts.Account;
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -13,6 +15,7 @@ import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,7 +36,15 @@ import rx.SingleSubscriber;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 
+/**
+ * Sample MainActivity
+ * <p/>
+ * Only a demo of the library - not guaranteed to be complete, stateful, nor structured well.
+ */
 public class MainActivity extends AppCompatActivity {
+
+    private static final String STATE_ACCOUNT = "account";
+    private static final String PREF_ACCOUNT = "pref_account";
 
     private List<AlbumEntry> mAlbumEntries;
     private List<PhotoEntry> mPhotoEntries;
@@ -46,10 +57,15 @@ public class MainActivity extends AppCompatActivity {
     private PicasaAdapter mAdapter;
     private SwipeRefreshLayout mRefreshLayout;
 
+    private Account mAccount;
+    private TextView mAccountText;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        PicasaClient.get().attachActivity(this);
 
         mAlbumMode = true;
 
@@ -70,13 +86,58 @@ public class MainActivity extends AppCompatActivity {
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                reload(true);
+                if (PicasaClient.get().isInitialized()) {
+                    reload(true);
+                }
             }
         });
 
-        PicasaClient.get().attachActivity(this);
+        Button choose = (Button) findViewById(R.id.choose_account);
+        choose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PicasaClient.get().pickAccount();
+            }
+        });
 
-        PicasaClient.get().pickAccount();
+        mAccountText = (TextView) findViewById(R.id.account);
+
+
+        if (PicasaClient.get().isInitialized()) {
+            reload(false);
+        } else {
+            String savedAccount = PreferenceManager.getDefaultSharedPreferences(this).getString(PREF_ACCOUNT, null);
+            if (savedAccount != null) {
+                mAccount = new Account(savedAccount, PicasaClient.ACCOUNT_TYPE_GOOGLE);
+                PicasaClient.get().setAccount(mAccount)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Subscriber<Object>() {
+                            @Override
+                            public void onCompleted() {
+
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+
+                            }
+
+                            @Override
+                            public void onNext(Object o) {
+                                reload(false);
+                            }
+                        });
+            }
+        }
+
+        updateAccount();
+    }
+
+    private void updateAccount() {
+        mAccount = PicasaClient.get().getAccount();
+        if (mAccount != null)
+            PreferenceManager.getDefaultSharedPreferences(this).edit().putString(PREF_ACCOUNT, mAccount.name).apply();
+        mAccountText.setText(String.format(getString(R.string.account), mAccount == null ? "None" : mAccount.name));
     }
 
     private void reload(boolean force) {
@@ -161,6 +222,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext(Object o) {
+                        updateAccount();
                         reload(false);
                     }
                 });

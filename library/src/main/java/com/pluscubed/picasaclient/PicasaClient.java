@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.annotation.Nullable;
 
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
@@ -40,13 +41,13 @@ import rx.schedulers.Schedulers;
 
 public class PicasaClient {
 
+    public static final String ACCOUNT_TYPE_GOOGLE = "com.google";
+
     private static final String SCOPE_PICASA = "https://picasaweb.google.com/data/";
     private static final String BASE_API_URL = "https://picasaweb.google.com/data/feed/api/user/";
 
     private static final int REQUEST_ACCOUNT_PICKER = 1000;
     private static final int REQUEST_RECOVER_PLAY_SERVICES_ERROR = 1024;
-
-    private static final String ACCOUNT_TYPE_GOOGLE = "com.google";
 
     private static PicasaClient picasaClient;
     private Activity mActivity;
@@ -193,9 +194,18 @@ public class PicasaClient {
     }
 
     private void checkTokenInitialized() {
-        if (mOAuthToken == null) {
+        if (!isInitialized()) {
             throw new RuntimeException("Service not initialized");
         }
+    }
+
+    public boolean isInitialized(){
+        return mOAuthToken!=null;
+    }
+
+    @Nullable
+    public Account getAccount(){
+        return mAccount;
     }
 
     public PicasaService getService() {
