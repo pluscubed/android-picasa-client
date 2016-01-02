@@ -232,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        PicasaClient.get().detachActivity();
+        PicasaClient.get().detach();
     }
 
     @Override

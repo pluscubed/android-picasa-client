@@ -4,6 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -51,6 +52,7 @@ public class PicasaClient {
 
     private static PicasaClient picasaClient;
     private Activity mActivity;
+    private Fragment mFragment;
     private Account mAccount;
     private String mOAuthToken;
     private PicasaService mPicasaService;
@@ -99,8 +101,14 @@ public class PicasaClient {
         mActivity = activity;
     }
 
-    public void detachActivity() {
+    public void attachFragment(Activity activity, Fragment fragment) {
+        mActivity = activity;
+        mFragment = fragment;
+    }
+
+    public void detach() {
         mActivity = null;
+        mFragment = null;
     }
 
     /**
@@ -117,10 +125,17 @@ public class PicasaClient {
     }
 
 
+    /**
+     * onActivityResult will be called eitehr in the Activity/Fragment depending on whether a Fragment is attached.
+     */
     public void pickAccount() {
         String[] accountTypes = new String[]{ACCOUNT_TYPE_GOOGLE};
         Intent intent = AccountPicker.newChooseAccountIntent(null, null, accountTypes, false, null, null, null, null);
-        mActivity.startActivityForResult(intent, REQUEST_ACCOUNT_PICKER);
+        if (mFragment != null) {
+            mFragment.startActivityForResult(intent, REQUEST_ACCOUNT_PICKER);
+        } else {
+            mActivity.startActivityForResult(intent, REQUEST_ACCOUNT_PICKER);
+        }
     }
 
 
