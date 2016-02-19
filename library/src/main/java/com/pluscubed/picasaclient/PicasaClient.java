@@ -58,8 +58,8 @@ public class PicasaClient {
     private PicasaService mPicasaService;
 
     private PicasaClient() {
-        OkHttpClient client = new OkHttpClient();
-        client.interceptors().add(new Interceptor() {
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {
                 Request originalRequest = chain.request();
@@ -78,7 +78,7 @@ public class PicasaClient {
                         .build();
                 return chain.proceed(authorizedRequest);
             }
-        });
+                }).build();
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_API_URL)
