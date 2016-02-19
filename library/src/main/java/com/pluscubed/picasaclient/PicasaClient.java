@@ -21,17 +21,17 @@ import com.pluscubed.picasaclient.model.AlbumFeed;
 import com.pluscubed.picasaclient.model.AlbumFeedResponse;
 import com.pluscubed.picasaclient.model.UserFeed;
 import com.pluscubed.picasaclient.model.UserFeedResponse;
-import com.squareup.okhttp.HttpUrl;
-import com.squareup.okhttp.Interceptor;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 
 import java.io.IOException;
 
-import retrofit.GsonConverterFactory;
-import retrofit.Retrofit;
-import retrofit.RxJavaCallAdapterFactory;
+import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 import rx.Observable;
 import rx.Single;
 import rx.SingleSubscriber;
@@ -67,7 +67,7 @@ public class PicasaClient {
                     return chain.proceed(originalRequest);
                 }
 
-                HttpUrl jsonUrl = originalRequest.httpUrl().newBuilder()
+                HttpUrl jsonUrl = originalRequest.url().newBuilder()
                         .addQueryParameter("alt", "json")
                         .build();
 
