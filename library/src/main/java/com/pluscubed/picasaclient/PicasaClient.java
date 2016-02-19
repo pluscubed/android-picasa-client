@@ -32,7 +32,7 @@ import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
-import rx.Observable;
+import rx.Completable;
 import rx.Single;
 import rx.SingleSubscriber;
 import rx.android.schedulers.AndroidSchedulers;
@@ -112,15 +112,15 @@ public class PicasaClient {
     }
 
     /**
-     * Observable emits an item when the Picasa service is initialized, empty otherwise.
+     * Completed when the Picasa service is initialized.
      */
-    public Observable<?> setAccount(Account account) {
+    public Completable setAccount(Account account) {
         if (account.type.equals(ACCOUNT_TYPE_GOOGLE)) {
             mAccount = account;
 
             return retrieveTokenInitService();
         } else {
-            return Observable.error(new RuntimeException("You may only set a Google account"));
+            return Completable.error(new RuntimeException("You may only set a Google account"));
         }
     }
 
@@ -140,10 +140,9 @@ public class PicasaClient {
 
 
     /**
-     * Processes account picker or error result. Observable emits an item when the Picasa service is initialized, empty otherwise.
+     * Processes account picker or error result. Completed when the Picasa service is initialized.
      */
-    //TODO: Use Completable once public API is released
-    public Observable<?> onActivityResult(int requestCode, int resultCode, Intent data) {
+    public Completable onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_ACCOUNT_PICKER) {
             if (resultCode == Activity.RESULT_OK) {
                 String accountEmail = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
@@ -152,14 +151,14 @@ public class PicasaClient {
                 return retrieveTokenInitService();
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 //Select an account to add
-                return Observable.error(new Exception("User canceled account picker dialog"));
+                return Completable.error(new Exception("User canceled account picker dialog"));
             }
         } else if (requestCode == REQUEST_RECOVER_PLAY_SERVICES_ERROR && resultCode == Activity.RESULT_OK) {
             // Receiving a result that follows a GoogleAuthException, try auth again
             return retrieveTokenInitService();
         }
 
-        return Observable.empty();
+        return Completable.never();
     }
 
     private boolean isDeviceOnline() {
@@ -168,7 +167,7 @@ public class PicasaClient {
         return networkInfo != null && networkInfo.isConnected();
     }
 
-    private Observable<?> retrieveTokenInitService() {
+    private Completable retrieveTokenInitService() {
         if (isDeviceOnline()) {
             return Single.create(new Single.OnSubscribe<String>() {
                 @Override
@@ -202,9 +201,10 @@ public class PicasaClient {
                             mOAuthToken = s;
                         }
                     })
-                    .toObservable();
+                    .toObservable()
+                    .toCompletable();
         } else {
-            return Observable.error(new Exception("Device not online."));
+            return Completable.error(new Exception("Device not online."));
         }
     }
 

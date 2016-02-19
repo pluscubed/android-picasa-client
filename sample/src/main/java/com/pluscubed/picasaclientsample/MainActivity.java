@@ -32,8 +32,9 @@ import com.pluscubed.picasaclient.model.UserFeed;
 import java.util.ArrayList;
 import java.util.List;
 
+import rx.Completable;
 import rx.SingleSubscriber;
-import rx.Subscriber;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 
 /**
@@ -111,10 +112,10 @@ public class MainActivity extends AppCompatActivity {
                 mAccount = new Account(savedAccount, PicasaClient.ACCOUNT_TYPE_GOOGLE);
                 PicasaClient.get().setAccount(mAccount)
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(new Subscriber<Object>() {
+                        .subscribe(new Completable.CompletableSubscriber() {
                             @Override
                             public void onCompleted() {
-
+                                reload(false);
                             }
 
                             @Override
@@ -123,8 +124,8 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                             @Override
-                            public void onNext(Object o) {
-                                reload(false);
+                            public void onSubscribe(Subscription d) {
+
                             }
                         });
             }
@@ -209,10 +210,11 @@ public class MainActivity extends AppCompatActivity {
 
         PicasaClient.get().onActivityResult(requestCode, resultCode, data)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Object>() {
+                .subscribe(new Completable.CompletableSubscriber() {
                     @Override
                     public void onCompleted() {
-
+                        updateAccount();
+                        reload(false);
                     }
 
                     @Override
@@ -221,9 +223,8 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onNext(Object o) {
-                        updateAccount();
-                        reload(false);
+                    public void onSubscribe(Subscription d) {
+
                     }
                 });
     }
