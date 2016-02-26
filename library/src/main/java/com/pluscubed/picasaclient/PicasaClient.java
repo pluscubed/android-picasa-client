@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
@@ -23,6 +24,9 @@ import com.pluscubed.picasaclient.model.UserFeed;
 import com.pluscubed.picasaclient.model.UserFeedResponse;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
@@ -114,11 +118,11 @@ public class PicasaClient {
     /**
      * Completed when the Picasa service is initialized.
      */
-    public Completable setAccount(Account account) {
+    public Completable setAccount(Account account, String... additionalScopes) {
         if (account.type.equals(ACCOUNT_TYPE_GOOGLE)) {
             mAccount = account;
 
-            return retrieveTokenInitService();
+            return retrieveTokenInitService(additionalScopes);
         } else {
             return Completable.error(new RuntimeException("You may only set a Google account"));
         }
@@ -142,20 +146,20 @@ public class PicasaClient {
     /**
      * Processes account picker or error result. Completed when the Picasa service is initialized.
      */
-    public Completable onActivityResult(int requestCode, int resultCode, Intent data) {
+    public Completable onActivityResult(int requestCode, int resultCode, Intent data, String... additionalScopes) {
         if (requestCode == REQUEST_ACCOUNT_PICKER) {
             if (resultCode == Activity.RESULT_OK) {
                 String accountEmail = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
                 mAccount = new Account(accountEmail, ACCOUNT_TYPE_GOOGLE);
 
-                return retrieveTokenInitService();
+                return retrieveTokenInitService(additionalScopes);
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 //Select an account to add
                 return Completable.error(new Exception("User canceled account picker dialog"));
             }
         } else if (requestCode == REQUEST_RECOVER_PLAY_SERVICES_ERROR && resultCode == Activity.RESULT_OK) {
             // Receiving a result that follows a GoogleAuthException, try auth again
-            return retrieveTokenInitService();
+            return retrieveTokenInitService(additionalScopes);
         }
 
         return Completable.never();
@@ -167,13 +171,17 @@ public class PicasaClient {
         return networkInfo != null && networkInfo.isConnected();
     }
 
-    private Completable retrieveTokenInitService() {
+    private Completable retrieveTokenInitService(final String... additionalScopes) {
         if (isDeviceOnline()) {
             return Single.create(new Single.OnSubscribe<String>() {
                 @Override
                 public void call(SingleSubscriber<? super String> subscriber) {
                     try {
-                        subscriber.onSuccess(GoogleAuthUtil.getToken(mActivity, mAccount, "oauth2:" + SCOPE_PICASA));
+                        List<String> scopes = new ArrayList<>();
+                        scopes.add(SCOPE_PICASA);
+                        scopes.addAll(Arrays.asList(additionalScopes));
+                        subscriber.onSuccess(GoogleAuthUtil.getToken(mActivity, mAccount, "oauth2:"
+                                + TextUtils.join(" ", scopes)));
                     } catch (IOException | GoogleAuthException e) {
                         subscriber.onError(e);
                     }
