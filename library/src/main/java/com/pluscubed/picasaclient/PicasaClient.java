@@ -130,7 +130,7 @@ public class PicasaClient {
 
 
     /**
-     * onActivityResult will be called eitehr in the Activity/Fragment depending on whether a Fragment is attached.
+     * onActivityResult will be called either in the Activity/Fragment depending on whether a Fragment is attached.
      */
     public void pickAccount() {
         String[] accountTypes = new String[]{ACCOUNT_TYPE_GOOGLE};
